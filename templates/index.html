@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Event-Driven Architecture Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-broadcast-tower text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">MQTT Event-Driven Architecture</h1>
+                        <p class="text-blue-100">Real-time IoT Sensor Monitoring Dashboard</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="connection-status" class="flex items-center space-x-2">
+                        <div id="status-indicator" class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span id="status-text">Disconnected</span>
+                    </div>
+                    <div class="text-sm">
+                        <span id="message-count">0</span> messages
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Connection Status Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                System Status
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-wifi text-blue-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">MQTT Connection</p>
+                            <p id="mqtt-status" class="font-semibold text-blue-700">Checking...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-sensor text-green-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">Sensor Data</p>
+                            <p id="sensor-status" class="font-semibold text-green-700">Waiting...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-mobile-alt text-purple-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">Device Status</p>
+                            <p id="device-status" class="font-semibold text-purple-700">Waiting...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Data Display -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Real-time Sensor Data -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-thermometer-half text-red-500 mr-2"></i>
+                    Real-time Sensor Data
+                </h2>
+                <div id="sensor-data" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>Waiting for sensor data...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Status -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-mobile-alt text-blue-500 mr-2"></i>
+                    Device Status
+                </h2>
+                <div id="device-info" class="space-y-4">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>Waiting for device status...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Command Control Panel -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-terminal text-green-500 mr-2"></i>
+                Command Control Panel
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="command-select" class="block text-sm font-medium text-gray-700 mb-2">
+                        Command Type
+                    </label>
+                    <select id="command-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="restart">Restart Device</option>
+                        <option value="calibrate">Calibrate Sensors</option>
+                        <option value="update">Update Device</option>
+                        <option value="custom">Custom Command</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="target-device" class="block text-sm font-medium text-gray-700 mb-2">
+                        Target Device
+                    </label>
+                    <input type="text" id="target-device" value="sensor_node_001" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="mt-4">
+                <label for="command-params" class="block text-sm font-medium text-gray-700 mb-2">
+                    Parameters (JSON)
+                </label>
+                <textarea id="command-params" rows="3" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder='{"key": "value"}'></textarea>
+            </div>
+            <div class="mt-6">
+                <button id="send-command" 
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition duration-200 flex items-center">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Send Command
+                </button>
+                <div id="command-result" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Message History -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-history text-gray-500 mr-2"></i>
+                Message History
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="message-history" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">
+                                No messages yet...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">
+                MQTT Event-Driven Architecture Demo | Built with Python, Flask, and WebSockets
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
