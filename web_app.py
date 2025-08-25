@@ -19,8 +19,14 @@ load_dotenv('config.env')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key')
 
-# Initialize SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*")
+# Initialize SocketIO with cross-platform async mode
+try:
+    import eventlet  # type: ignore  # noqa: F401
+    _async_mode = 'eventlet'
+except Exception:
+    _async_mode = 'threading'
+
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
 
 # Global variables
 mqtt_client = None
@@ -298,12 +304,13 @@ def handle_data_request():
 
 if __name__ == '__main__':
     host = os.getenv('FLASK_HOST', '0.0.0.0')
-    port = int(os.getenv('FLASK_PORT', 8080))
+    port = int(os.getenv('FLASK_PORT', 5000))
     debug = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
-    
+
     print(f"Starting web application on {host}:{port}")
     print(f"Debug mode: {debug}")
-    
+    print(f"SocketIO async_mode: {_async_mode}")
+
     try:
         socketio.run(app, host=host, port=port, debug=debug)
     except KeyboardInterrupt:

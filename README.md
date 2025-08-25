@@ -57,20 +57,29 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 ### 3. Install Python Dependencies
 
 ```bash
+# macOS/Linux
 pip install -r requirements.txt
+
+# Windows (PowerShell)
+python -m pip install -r requirements.txt
 ```
 
 ### 4. Install and Start MQTT Broker (Mosquitto)
 
 ```bash
-# Install Mosquitto
+# macOS (Homebrew)
 brew install mosquitto
-
-# Start Mosquitto service
 brew services start mosquitto
-
-# Verify it's running
 brew services list | grep mosquitto
+
+# Ubuntu/Debian
+sudo apt update && sudo apt install -y mosquitto mosquitto-clients
+sudo systemctl enable --now mosquitto
+systemctl status mosquitto | cat
+
+# Windows
+# Download MSI from https://mosquitto.org/download/ and install
+# Then run Mosquitto from Start Menu or as a Windows Service
 ```
 
 ### 5. Configure Environment
@@ -92,7 +101,12 @@ The system consists of three main components that can be run independently:
 
 ```bash
 # Terminal 1
+# macOS/Linux
 source venv/bin/activate
+python web_app.py
+
+# Windows (PowerShell)
+venv\Scripts\Activate.ps1
 python web_app.py
 ```
 
@@ -102,7 +116,12 @@ The web dashboard will be available at: http://localhost:5000
 
 ```bash
 # Terminal 2
+# macOS/Linux
 source venv/bin/activate
+python mqtt_publisher.py
+
+# Windows (PowerShell)
+venv\Scripts\Activate.ps1
 python mqtt_publisher.py
 ```
 
@@ -112,7 +131,12 @@ This will start publishing simulated sensor data every 5 seconds.
 
 ```bash
 # Terminal 3
+# macOS/Linux
 source venv/bin/activate
+python mqtt_subscriber.py
+
+# Windows (PowerShell)
+venv\Scripts\Activate.ps1
 python mqtt_subscriber.py
 ```
 
@@ -123,8 +147,12 @@ This will show all incoming MQTT messages in the terminal.
 You can run all components simultaneously using the provided scripts:
 
 ```bash
-# Start everything (requires multiple terminals)
+# Start everything
+# macOS/Linux: (requires multiple terminals)
 ./start_system.sh
+
+# Windows (PowerShell):
+./start_system.ps1
 
 # Or run components individually as shown above
 ```
@@ -192,7 +220,10 @@ MQTT_TOPIC_COMMANDS=device/commands
 
 ### MQTT Broker Configuration
 
-Mosquitto configuration file location: `/opt/homebrew/etc/mosquitto/mosquitto.conf`
+Common configuration file locations:
+- macOS (Homebrew): `/opt/homebrew/etc/mosquitto/mosquitto.conf`
+- Ubuntu/Debian: `/etc/mosquitto/mosquitto.conf`
+- Windows: `C:\\Program Files\\mosquitto\\mosquitto.conf`
 
 Common configurations:
 - Enable WebSocket support for browser clients
@@ -241,7 +272,7 @@ Common configurations:
 
 ### Debug Mode
 
-Enable debug logging by setting `FLASK_DEBUG=True` in `config.env` and check terminal output for detailed information.
+Enable debug logging by setting `FLASK_DEBUG=True` in `config.env` and check terminal output for detailed information. On Windows, ensure PowerShell execution policy allows scripts: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 ## 🚀 Extending the System
 

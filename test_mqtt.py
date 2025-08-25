@@ -58,9 +58,12 @@ def test_mqtt_connection():
     else:
         print("❌ Failed to connect to MQTT broker")
         print("Please check:")
-        print("  1. Mosquitto is running: brew services list | grep mosquitto")
-        print("  2. Port 1883 is not blocked")
-        print("  3. Network connectivity")
+        print("  1. Mosquitto is running:")
+        print("     - macOS: brew services list | grep mosquitto")
+        print("     - Linux: systemctl status mosquitto | cat")
+        print("     - Windows: Start Mosquitto from Start Menu or Services")
+        print("  2. Port 1883 is not blocked by firewall")
+        print("  3. Network connectivity to host: $MQTT_BROKER_HOST")
         return False
     
     return True
@@ -139,7 +142,7 @@ def main():
         print("1. Run: python web_app.py")
         print("2. Run: python mqtt_publisher.py")
         print("3. Open: http://localhost:5000")
-        print("\nOr use: ./start_system.sh")
+        print("\nOr use: ./start_system.sh (macOS/Linux) or ./start_system.ps1 (Windows)")
     else:
         print("\n⚠️  Some tests failed. Please fix the issues before running the system.")
         print("\nCommon solutions:")
