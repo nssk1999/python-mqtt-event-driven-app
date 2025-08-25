@@ -15,14 +15,24 @@ if [ ! -d "venv" ]; then
     exit 1
 fi
 
-# Check if Mosquitto is running
-if ! brew services list | grep -q "mosquitto.*started"; then
-    echo "⚠️  Mosquitto MQTT broker is not running. Starting it now..."
-    brew services start mosquitto
-    sleep 3
+# Check if Mosquitto is running (macOS Homebrew or Linux systemd)
+if command -v brew >/dev/null 2>&1; then
+    if ! brew services list | grep -q "mosquitto.*started"; then
+        echo "⚠️  Mosquitto MQTT broker is not running. Starting it now via Homebrew..."
+        brew services start mosquitto || true
+        sleep 3
+    fi
+    echo "✅ Mosquitto MQTT broker is running"
+elif command -v systemctl >/dev/null 2>&1; then
+    if ! systemctl is-active --quiet mosquitto; then
+        echo "⚠️  Mosquitto MQTT broker is not running. Starting it now via systemd..."
+        sudo systemctl start mosquitto || true
+        sleep 3
+    fi
+    echo "✅ Mosquitto MQTT broker is running"
+else
+    echo "⚠️  Could not verify Mosquitto service. Ensure your broker is running on port 1883."
 fi
-
-echo "✅ Mosquitto MQTT broker is running"
 
 # Function to start a component in a new terminal
 start_component() {
@@ -78,7 +88,7 @@ echo "   ✅ Web Dashboard (http://localhost:5000)"
 echo "   ✅ MQTT Publisher (simulating sensors)"
 echo "   ✅ MQTT Subscriber (processing messages)"
 echo ""
-echo "🌐 Open your browser and navigate to: http://localhost:8080"
+echo "🌐 Open your browser and navigate to: http://localhost:5000"
 echo ""
 echo "📱 The system is now running with:"
 echo "   - Real-time sensor data streaming every 5 seconds"
